@@ -6,6 +6,8 @@ from telegram.ext import filters, CallbackContext  # استيراد filters بش
 import gradio as gr
 import requests
 
+
+logging.getLogger('gradio').setLevel(logging.WARNING)
 # إعدادات التسجيل
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
