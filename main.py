@@ -6,7 +6,7 @@ from telegram.ext import filters, CallbackContext  # استيراد filters بش
 import requests
 
 # تعريف النماذج من Hugging Face
-Models = [
+models = [
   "Yntec/pineappleAnimeMix",
   "Yntec/DucHaiten-Retro-Diffusers",
   "Yntec/edgeOfRealism",
