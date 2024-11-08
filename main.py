@@ -1,9 +1,14 @@
-import gradio as gr
 import time
+import logging
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler
-from telegram.ext import filters, CallbackContext  # استيراد filters بشكل صحيح
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+import gradio as gr
 import requests
+
+# إعدادات التسجيل
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # تعريف النماذج من Hugging Face
 models = [
@@ -234,6 +239,7 @@ models = [
   "Yntec/Dreamscapes_n_Dragonfire_v2"
 ]
 
+# تحميل النماذج
 model_functions = {}
 model_idx = 1
 for model_path in models:
@@ -245,40 +251,47 @@ for model_path in models:
         model_functions[model_idx] = gr.Interface(fn=the_fn, inputs=["text"], outputs=["image"])
     model_idx += 1
 
+# دالة إرسال الصورة من النموذج
 def send_it_idx(idx):
     def send_it_fn(prompt):
         output = (model_functions.get(idx) or model_functions.get(1))(prompt)
         return output
     return send_it_fn
 
+# دالة بدء البوت
+def start(update: Update, context: CallbackContext):
+    try:
+        update.message.reply_text('مرحبا! أرسل لي أي نص وسيتم توليد صورة بناءً على النماذج!')
+    except Exception as e:
+        logger.error(f"Error in start command: {e}")
+        update.message.reply_text("حدث خطأ. يرجى المحاولة لاحقًا.")
+
+# دالة التعامل مع الرسائل النصية
+def handle_message(update: Update, context: CallbackContext):
+    try:
+        prompt = update.message.text
+        images = []
+        
+        # توليد الصور من كل نموذج
+        for model_idx in range(1, len(models) + 1):
+            generated_image = send_it_idx(model_idx)(prompt)
+            
+            if generated_image:
+                images.append(generated_image[0])  # إضافة الصورة إلى القائمة
+        
+        # إرسال الصور إلى المستخدم
+        if images:
+            for image in images:
+                update.message.reply_photo(photo=image)
+        else:
+            update.message.reply_text('حدث خطأ في توليد الصور.')
+    except Exception as e:
+        logger.error(f"Error in handle_message: {e}")
+        update.message.reply_text("حدث خطأ أثناء معالجة رسالتك.")
+
 # إنشاء البوت
 updater = Updater("7865424971:AAF_Oe6lu8ZYAl5XIF1M6qU_8MK6GHWEll8", use_context=True)
 dispatcher = updater.dispatcher
-
-# دالة بدء البوت
-def start(update, context):
-    update.message.reply_text('مرحبا! أرسل لي أي نص وسيتم توليد صورة بناءً على النماذج!')
-
-# دالة التعامل مع الرسائل النصية
-def handle_message(update, context):
-    prompt = update.message.text
-    # قائمة الصور الناتجة من جميع النماذج
-    images = []
-    
-    # توليد صورة من كل نموذج في القائمة
-    for model_idx in range(1, len(models) + 1):
-        generated_image = send_it_idx(model_idx)(prompt)
-        
-        # التحقق من أن الصورة تم توليدها
-        if generated_image:
-            images.append(generated_image[0])  # إضافة الصورة إلى القائمة
-    
-    # إرسال جميع الصور إلى المستخدم
-    if images:
-        for image in images:
-            update.message.reply_photo(photo=image)
-    else:
-        update.message.reply_text('حدث خطأ في توليد الصور.')
 
 # ربط البوت بالأوامر
 dispatcher.add_handler(CommandHandler("start", start))
@@ -287,18 +300,3 @@ dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_me
 # بدء البوت
 updater.start_polling()
 updater.idle()
-
-# إعداد واجهة Gradio (إذا كنت تستخدمها في الخلفية)
-with gr.Blocks() as my_interface:
-    with gr.Column():
-        primary_prompt = gr.Textbox(label="Prompt", value="")
-        run = gr.Button("Run")
-        sd_outputs = {}
-        for model_path in models:
-            sd_outputs[model_idx] = gr.Image(label=model_path)
-            model_idx += 1
-
-    # إضافة الأحداث
-    run.click(send_it_idx(1), inputs=[primary_prompt], outputs=[sd_outputs[model_idx]])
-
-my_interface.launch(share=True)
