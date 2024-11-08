@@ -1,7 +1,8 @@
 import gradio as gr
 import time
-import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler
+from telegram.ext import filters, CallbackContext  # استيراد filters بشكل صحيح
 import requests
 
 # تعريف النماذج من Hugging Face
