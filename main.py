@@ -1,7 +1,8 @@
 import time
 import logging
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler
+from telegram.ext import filters, CallbackContext  # استيراد filters بشكل صحيح
 import gradio as gr
 import requests
 
