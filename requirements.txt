@@ -7,3 +7,4 @@ transformers
 gradio
 opencv-python
 ffmpeg-python
+omegaconf
