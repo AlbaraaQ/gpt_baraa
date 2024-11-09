@@ -2,3 +2,8 @@ videogen-hub
 torch
 huggingface-hub
 numpy
+pillow
+transformers
+gradio
+opencv-python
+ffmpeg-python
