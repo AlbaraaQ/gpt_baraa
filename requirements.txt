@@ -1,2 +1,4 @@
 videogen-hub
 torch
+huggingface-hub
+numpy
