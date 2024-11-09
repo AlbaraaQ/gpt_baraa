@@ -1,4 +1,5 @@
 deepspeed; platform_system != "Windows"
+videogen_hub
 bitsandbytes
 flask
 flask_restful
