@@ -15,7 +15,8 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean
 
 # تثبيت المكتبات المطلوبة من ملف requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
+RUN pip install -e .
 
 # تحديد الأمر الذي سيتم تشغيله عند بدء الحاوية
 CMD ["python", "main.py"]
